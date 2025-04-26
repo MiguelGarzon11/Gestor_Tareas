@@ -23,3 +23,23 @@ class Recurring(Task):
         data["intervalo"] = self.intervalo
         return data
     
+class TaskManager:
+    def __init__(self):
+        self.tasks = []
+
+    def agregar_tarea(self, tarea):
+        self.tasks.append(tarea)
+    
+    def eliminar_tarea(self, tarea_id):
+        self.tasks = [tarea for tarea in self.tasks if tarea.id != tarea_id]
+
+    def marcar_completada(self, tarea_id):
+        for tarea in self.tasks:
+            if tarea.id == tarea_id:
+                tarea.marcar_completada()
+
+    def get_all_tasks(self):
+        return self.tasks
+    
+
+    
