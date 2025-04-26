@@ -7,8 +7,11 @@ class JSONAlmacenamiento:
     def cargar_tareas(self):
         try:
             with open(self.ruta, 'r') as archivo:
-                return json.load(archivo)   # Permite cargar el contenido del archivo JSON en un objeto Python(lsita o diccionario)
-        except FileNotFoundError:
+                contenido = archivo.read().strip()
+                if not contenido:
+                    return []
+                return json.loads(contenido)   # Permite cargar el contenido del archivo JSON en un objeto Python(lsita o diccionario)
+        except (FileNotFoundError, json.JSONDecodeError):
             return []
         
     def guardar_tareas(self, tareas):

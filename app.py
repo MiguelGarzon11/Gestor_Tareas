@@ -1,71 +1,13 @@
-# Interfaz gráfica y gestión de tareas
+import ctypes
+ctypes.CDLL("libX11.so.6").XInitThreads()
+
 
 import tkinter as tk
-from tkinter import messagebox
-from tareas import SimpleTask, Recurring
+from tareas import SimpleTask, Recurring, TaskManager
+from almacenamiento import JSONAlmacenamiento
+from interfaz import TaskApp
 
-class TaskApp:
-    def __init__(self, storage, manager):
-        self.storage = storage
-        self.manager = manager
-        self.root = tk.Tk() # Crea la ventana principal
-        self.root.title("Gestor de Tareas") # Establece el título de la ventana
-
-        # Widgets
-        self.entry = tk.Entry(self.root) # Campo de texto donde se escribe la nueva tarea.
-        self.entry.pack() # Organiza visualmente el widget.
-
-        self.add_button = tk.Button(self.root, text="Agregar tarea", command=self.agregar_tarea) # Se crea un boton y con el command se llama a la función agregar_tarea al hacer click
-        self.add_button.pack() # Muestra el boton en pantalla
-
-        self.complete_button = tk.Button(self.root, text="Marcar como completa", command=self.marcar_completada)
-        self.complete_button.pack()
-
-        self.delete_button = tk.Button(self.root, text="Eliminar tarea", command=self.eliminar_tarea)
-        self.delete_button.pack()
-
-        self.task_listbox = tk.Listbox(self.root)
-        self.task_listbox.pack() # Muestra la lista en pantalla
-
-        self.refresh_view() # Llama a la función refresh_view para mostrar la lista de tareas al iniciar.
-
-    def agregar_tarea(self):
-        descripcion = self.entry.get() # get() obtiene el texto escrito por el usuario.
-        if descripcion: # Si el campo no esta vacío.
-            nueva_tarea = SimpleTask(id=len(self.manager.tasks)+1, descripcion=descripcion)
-            self.manager.agregar_tarea(nueva_tarea)
-            self.storage.guardar_tareas(self.manager.tasks)
-            self.refresh_view()
-
-    def eliminar_tarea(self):
-        selected_task = self.task_listbox.get(tk.ACTIVATE)
-        if selected_task:
-            task_id = int(selected_task.split()[0]) # Asumiendo formato "ID Descripción"
-            self.manager.eliminar_tarea(task_id)
-            self.storage.guardar_tareas(self.manager.tasks)
-            self.refresh_view()
-
-    def marcar_completada(self):
-        selected_task = self.task_listbox.get(tk.ACTIVATE)
-        if selected_task:
-            task_id = int(selected_task.split()[0])
-            self.manager.marcar_completada(task_id)
-            self.storage.guardar_tareas(self.manager.tasks)
-            self.refresh_view()
-
-    def refresh_view(self):
-        self.task_listbox.delete(0, tk.END)
-        for tarea in self.manager.tasks:
-            self.task_listbox.insert(tk.END, f"{tarea.id} {tarea.descripcion} - {'Completada' if tarea.completada else 'Pendiente'}")
-
-    def run(self):
-        self.root.mainloop()
-
-
-if __name__ == "__main__":
-    from app import JSONAlmacenamiento
-    from tareas import TaskManager
-
+def main():
     almacenamiento = JSONAlmacenamiento("tareas.json")
     datos = almacenamiento.cargar_tareas()
     manager = TaskManager()
@@ -75,13 +17,13 @@ if __name__ == "__main__":
             tarea = Recurring(d["id"], d["descripcion"], d["intervalo"])
         else:
             tarea = SimpleTask(d["id"], d["descripcion"])
-        if d["completada"]:
+        if d.get("completada"):
             tarea.marcar_completada()
         manager.agregar_tarea(tarea)
 
-    app = TaskApp(almacenamiento, manager)
-    app.run
-    
+    root = tk.Tk()
+    app = TaskApp(root, almacenamiento, manager)
+    app.root.mainloop()
 
-
-
+if __name__ == "__main__":
+    main()
