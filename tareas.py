@@ -1,4 +1,4 @@
-class Tarea:
+class Task:
     def __init__(self, id, descripcion):
         self.id = id
         self.descripcion = descripcion
@@ -10,10 +10,10 @@ class Tarea:
     def marcar_completada(self):
         self.completada = True
 
-class SimpleTarea(Tarea):
+class SimpleTask(Task):
     pass
 
-class Recurring(Tarea):
+class Recurring(Task): 
     def __init__(self, id, descripcion, intervalo):
         super().__init__(id, descripcion)
         self.intervalo = intervalo
